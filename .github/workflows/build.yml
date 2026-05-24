@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04 # IMPORTANTE: no uses 24.04 ni latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -19,12 +19,9 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk \
-            python3-pip autoconf libtool pkg-config \
-            zlib1g-dev libncurses5-dev libssl-dev libffi-dev \
-            libsqlite3-dev libltdl-dev
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev libffi-dev libsqlite3-dev libltdl-dev
 
-      - name: Install Buildozer + Cython
+      - name: Install Buildozer
         run: |
           pip install --upgrade pip
           pip install "cython==0.29.36" "buildozer==1.5.0"
@@ -32,7 +29,6 @@ jobs:
       - name: Build APK
         run: buildozer -v android debug
         env:
-          # acepta licencias automáticamente
           ACCEPT_SDK_LICENSE: y
 
       - name: Upload APK
