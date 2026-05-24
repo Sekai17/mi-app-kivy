@@ -1,31 +1,42 @@
-name: Build APK
+name: build-android
 on:
   push:
     branches: [ main, master ]
 
 jobs:
-  build-android:
-    runs-on: ubuntu-22.04 # no uses 24.04 todavía
+  build:
+    runs-on: ubuntu-22.04 # IMPORTANTE: no uses 24.04 ni latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
         with:
-          command: buildozer android debug
-          buildozer_version: stable
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git zip unzip openjdk-17-jdk \
+            python3-pip autoconf libtool pkg-config \
+            zlib1g-dev libncurses5-dev libssl-dev libffi-dev \
+            libsqlite3-dev libltdl-dev
+
+      - name: Install Buildozer + Cython
+        run: |
+          pip install --upgrade pip
+          pip install "cython==0.29.36" "buildozer==1.5.0"
+
+      - name: Build APK
+        run: buildozer -v android debug
         env:
-          # fuerza 1 sola arch y NDK bueno
-          APP_ANDROID_ARCH: arm64-v8a
-          APP_ANDROID_API: '33'
-          APP_ANDROID_MINAPI: '24'
-          APP_ANDROID_NDK: '25b'
-          APP_ANDROID_ACCEPT_SDK_LICENSE: '1'
+          # acepta licencias automáticamente
+          ACCEPT_SDK_LICENSE: y
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: My-Kivy-App-APK
-          path: ${{ steps.buildozer.outputs.filename }}
+          name: app-debug-apk
+          path: bin/*.apk
