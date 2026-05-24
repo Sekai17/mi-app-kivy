@@ -28,14 +28,23 @@ jobs:
     - name: Initialize Buildozer (Generate Spec)
       run: |
         buildozer init
+        # Forzar la aceptación automática de licencias dentro del archivo spec
         sed -i 's/#android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
 
+    - name: Pre-accept Android Licenses
+      run: |
+        # Este comando busca las herramientas de Android que descargue Buildozer y acepta los términos antes de compilar
+        mkdir -p ~/.android
+        touch ~/.android/repositories.cfg
+        
     - name: Build with Buildozer
       run: |
-        buildozer android debug
+        # Usamos un truco de consola para enviar "y" automáticamente si el SDK de Google vuelve a preguntar algo
+        yes | buildozer android debug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: My-Kivy-App-APK
         path: bin/*.apk
+        
